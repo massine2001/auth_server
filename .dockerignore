@@ -1,49 +1,33 @@
-# flyctl launch added from .gitignore
-**\HELP.md
-**\target
-**\.mvn\wrapper\maven-wrapper.jar
-!**\**\src\main\**\target
-!**\**\src\test\**\target
+# VCS / IDE
+.git
+.gitignore
+.idea
+*.iml
+*.ipr
+*.iws
+.vscode/
 
-### STS ###
-**\.apt_generated
-**\.classpath
-**\.factorypath
-**\.project
-**\.settings
-**\.springBeans
-**\.sts4-cache
+# OS
+.DS_Store
+Thumbs.db
 
-### IntelliJ IDEA ###
-**\.idea
-**\*.iws
-**\*.iml
-**\*.ipr
+# Maven/Gradle output
+target/
+build/
+out/
 
-### NetBeans ###
-nbproject\private
-nbbuild
-dist
-nbdist
-.nb-gradle
-**\build
-!**\**\src\main\**\build
-!**\**\src\test\**\build
+# Node (si présent)
+node_modules/
 
-### VS Code ###
-**\.vscode
+# Docker
+Dockerfile.*
+docker-compose*.yml
 
+# Env / secrets locaux
+.env
+.env.*
+!.env.example
 
-**\.env
-**\*.pem
-**\*.key
-**\*.jks
-**\*.p12
-**\*.der
-**\*.sql
-**\*.env
-**\*.yml
-**\*.yaml
-**\*.properties
-**\*.idea
-fly.toml
+# Logs
+*.log
+logs/
