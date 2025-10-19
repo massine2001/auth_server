@@ -9,6 +9,9 @@ primary_region = 'cdg'
 [build]
 dockerfile = "Dockerfile"
 
+[env]
+SPRING_PROFILES_ACTIVE = "app"
+
 [http_service]
   internal_port = 8080
   force_https = true
