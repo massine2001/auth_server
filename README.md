@@ -1,8 +1,8 @@
-#Authorization Server
+# Authorization Server
 
-##Serveur d’autorisation OAuth 2.1 / OpenID Connect basé sur Spring Authorization Server.
+## Serveur d’autorisation OAuth 2.1 / OpenID Connect basé sur Spring Authorization Server.
 
-###Fonctionnalités
+### Fonctionnalités
 
 Authentification des utilisateurs (formulaire de login Spring Security)
 
@@ -24,7 +24,7 @@ Rotation automatique des clés JWK avec désactivation différée
 
 Stockage des données OAuth (clients, tokens, consents, clés) en PostgreSQL (neon) via JDBC
 
-###Stack technique
+### Stack technique
 
 Spring Boot 3
 
@@ -32,10 +32,10 @@ Spring Authorization Server
 
 Java 21
 
-Structure principale
+### Structure principale
 org.massine.auth
-├── crypto        → génération et rotation des clés RSA / JWK
-├── oauth         → configuration SAS, clients initiaux
-├── security      → filtres et configuration HTTP
-├── user          → service de chargement des utilisateurs (JDBC)
-└── web           → CRUD des clients OAuth
+  crypto → génération et rotation des clés RSA / JWK
+  oauth → configuration SAS, clients initiaux
+  security → filtres et configuration HTTP
+  user → service de chargement des utilisateurs (JDBC)
+  web → CRUD des clients OAuth
