@@ -1,51 +1,52 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Massine Auth Server</title>
     <style>
-        body {
-            font-family: system-ui, sans-serif;
-            background: #f8f9fa;
-            color: #212529;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 { font-weight: 500; }
-        p { max-width: 500px; text-align: center; line-height: 1.4; }
-        a {
-            color: #007bff;
-            text-decoration: none;
-            margin: 0 0.5rem;
-        }
-        a:hover { text-decoration: underline; }
-        .links {
-            margin-top: 1.5rem;
-            font-size: 0.95rem;
-        }
+        body { font-family: system-ui, sans-serif; background:#f8f9fa; color:#212529;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            height:100vh; margin:0; }
+        h1 { font-weight:500; }
+        p { max-width:500px; text-align:center; line-height:1.4; }
+        a { color:#007bff; text-decoration:none; margin:0 0.5rem; }
+        a:hover { text-decoration:underline; }
+        .links { margin-top:1.5rem; font-size:0.95rem; }
+        .row { display:flex; gap:.5rem; align-items:center; justify-content:center; }
+        button { padding:.4rem .8rem; border:1px solid #ccc; background:white; border-radius:6px; cursor:pointer; }
+        button:hover { background:#f0f0f0; }
+        .msg { margin-top:1rem; color:green; }
     </style>
 </head>
 <body>
 <h1>auth.massine.org</h1>
+
 <p>
     Serveur d’autorisation (OAuth2 / OpenID Connect) personnel développé par
     <strong>Agharmiou Massine</strong>.
 </p>
-<p>
-    Ce service gère l’authentification et la délégation d’accès entre mes applications web.
-</p>
+<p>Ce service gère l’authentification et la délégation d’accès entre mes applications web.</p>
 
-<div class="links">
-    <a href="/login">Se connecter</a> |
-    <a href="/register">Créer un compte</a>
+<!-- Non authentifié -->
+<div class="links" sec:authorize="!isAuthenticated()">
+    <a th:href="@{/login}">Se connecter</a> |
+    <a th:href="@{/register}">Créer un compte</a>
 </div>
 
-<p style="margin-top:2rem;">
-    <a href="https://massine.org">massine.org</a>
-</p>
+<!-- Authentifié -->
+<div class="links" sec:authorize="isAuthenticated()">
+    <div class="row">
+        <span>Connecté en tant que&nbsp;<strong sec:authentication="name">user</strong></span>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit">Se déconnecter</button>
+        </form>
+    </div>
+</div>
+
+<p class="msg" th:if="${param.logout}">Déconnecté avec succès.</p>
+
+<p style="margin-top:2rem;"><a href="https://massine.org">massine.org</a></p>
 </body>
 </html>

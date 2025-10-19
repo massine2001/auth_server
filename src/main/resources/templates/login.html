@@ -1,52 +1,90 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Massine Auth Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
     <style>
-        body { font-family: system-ui, sans-serif; background:#f8f9fa; color:#212529;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            height:100vh; margin:0; }
-        h1 { font-weight:500; }
-        p { max-width:500px; text-align:center; line-height:1.4; }
-        a { color:#007bff; text-decoration:none; margin:0 0.5rem; }
-        a:hover { text-decoration:underline; }
-        .links { margin-top:1.5rem; font-size:0.95rem; }
-        .row { display:flex; gap:.5rem; align-items:center; justify-content:center; }
-        button { padding:.4rem .8rem; border:1px solid #ccc; background:white; border-radius:6px; cursor:pointer; }
-        button:hover { background:#f0f0f0; }
-        .msg { margin-top:1rem; color:green; }
+        body {
+            font-family: sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f8f9fa;
+        }
+        form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h1 {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 0.5rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .error {
+            color: red;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .links {
+            text-align: center;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        .links a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .links a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-<h1>auth.massine.org</h1>
+<form th:action="@{/login}" method="post">
+    <h1>Connexion</h1>
 
-<p>
-    Serveur d’autorisation (OAuth2 / OpenID Connect) personnel développé par
-    <strong>Agharmiou Massine</strong>.
-</p>
-<p>Ce service gère l’authentification et la délégation d’accès entre mes applications web.</p>
-
-<!-- Non authentifié -->
-<div class="links" sec:authorize="!isAuthenticated()">
-    <a th:href="@{/login}">Se connecter</a> |
-    <a th:href="@{/register}">Créer un compte</a>
-</div>
-
-<!-- Authentifié -->
-<div class="links" sec:authorize="isAuthenticated()">
-    <div class="row">
-        <span>Connecté en tant que&nbsp;<strong sec:authentication="name">user</strong></span>
-        <form th:action="@{/logout}" method="post" style="display:inline;">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit">Se déconnecter</button>
-        </form>
+    <div th:if="${param.error}" class="error">
+        Nom d'utilisateur ou mot de passe invalide.
     </div>
-</div>
+    <div th:if="${param.logout}" class="error" style="color:green">
+        Déconnecté avec succès.
+    </div>
+    <div th:if="${param.verified}" class="error" style="color:green">
+        Votre e-mail a été vérifié. Vous pouvez maintenant vous connecter.
+    </div>
 
-<p class="msg" th:if="${param.logout}">Déconnecté avec succès.</p>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-<p style="margin-top:2rem;"><a href="https://massine.org">massine.org</a></p>
+    <input type="text" name="username" placeholder="Adresse e-mail" required autofocus>
+    <input type="password" name="password" placeholder="Mot de passe" required>
+
+    <button type="submit">Se connecter</button>
+
+    <div class="links">
+        <a th:href="@{/register}">Créer un compte</a><br>
+        <a th:href="@{/forgot-password}">Mot de passe oublié ?</a>
+    </div>
+</form>
 </body>
 </html>
