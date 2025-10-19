@@ -49,10 +49,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/register", "/verify", "/forgot-password", "/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/register", "/forgot-password", "/reset-password").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(f -> f.loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .permitAll()
-                );
+                        .formLogin(f -> f.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
+                        .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/?logout=1").permitAll());
 
 
 
