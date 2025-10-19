@@ -26,7 +26,7 @@ public class JwkService {
 
     public RSAPrivateKey loadActivePrivateKey() {
         return jdbc.queryForObject(
-                "SELECT private_pem FROM oauth2_jwk WHERE active=true LIMIT 1",
+                "SELECT private_pem FROM auth_schema.oauth2_jwk WHERE active=true LIMIT 1",
                 (rs, i) -> {
                     try {
                         return (RSAPrivateKey) PemUtils.parseRSAPrivateKey(rs.getString("private_pem"));
@@ -71,7 +71,7 @@ public class JwkService {
     }
     public JWKSet loadActivePublicSet() {
         var rows = jdbc.query(
-                "SELECT kid,kty,alg,public_pem FROM oauth2_jwk WHERE active=true",
+                "SELECT kid,kty,alg,public_pem FROM auth_schema.oauth2_jwk WHERE active=true",
                 (rs, i) -> {
                     var kid = rs.getString("kid");
                     var pub = rs.getString("public_pem");
@@ -92,7 +92,7 @@ public class JwkService {
     @Transactional
     public void ensureActiveKeyExists() {
         Integer n = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM oauth2_jwk WHERE active=true", Integer.class
+                "SELECT COUNT(*) FROM auth_schema.oauth2_jwk WHERE active=true", Integer.class
         );
         if (n == null || n == 0) {
             generateAndActivateRSA();
@@ -102,7 +102,7 @@ public class JwkService {
     public RSAKey loadActiveSignerKey() {
         var list = jdbc.query("""
             SELECT kid, public_pem, private_pem
-            FROM oauth2_jwk WHERE active=true
+            FROM auth_schema.oauth2_jwk WHERE active=true
             ORDER BY created_at DESC
             LIMIT 1
         """, (rs, i) -> {

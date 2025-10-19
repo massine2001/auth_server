@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -45,12 +46,15 @@ public class SecurityConfig {
     SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers("/login", "/assets/**").permitAll()
+                        .requestMatchers("/", "/register", "/verify", "/forgot-password", "/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/register", "/forgot-password", "/reset-password").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(f -> f
-                        .loginPage("/login")
+                .formLogin(f -> f.loginPage("/login")
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
                 );
+
+
 
         return http.build();
     }

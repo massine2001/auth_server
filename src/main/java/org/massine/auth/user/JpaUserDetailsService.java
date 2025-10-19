@@ -22,9 +22,12 @@ public class JpaUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         var user = jdbc.queryForObject("""
-      SELECT id, username, password_hash, enabled
-      FROM auth_schema.users WHERE username=?
-      """, (rs, i) -> map(rs), username);
+  SELECT id, username, password_hash, enabled
+  FROM auth_schema.users
+  WHERE email = ? OR username = ?
+  """, (rs, i) -> map(rs), username, username);
+
+
         var roles = jdbc.query("""
       SELECT r.name FROM auth_schema.roles r
       JOIN auth_schema.user_roles ur ON ur.role_id=r.id
