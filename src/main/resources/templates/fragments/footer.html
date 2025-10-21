@@ -1,0 +1,15 @@
+<div th:fragment="mainFooter" xmlns:th="http://www.thymeleaf.org">
+    <style>
+        .site-footer {position: absolute;bottom: 0;left: 0; width:100%; margin: 1.5rem 0 0;padding: 0.5rem 0; color:#6b7280; font-size:0.875rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
+        .site-footer a { color:#6b7280; text-decoration:none; }
+        .site-footer a:hover { text-decoration:underline; }
+        .footer-left { opacity:0.9; }
+        .footer-right { opacity:0.75; }
+        @media (max-width:480px){ .site-footer{ flex-direction:column; align-items:center; text-align:center; gap:0.25rem } }
+    </style>
+    <footer class="site-footer">
+        <div class="footer-left">© 2025 Agharmiou Massine — <a th:href="@{/}">auth.massine.org</a></div>
+        <div class="footer-right"><a href="https://github.com/massine2001" target="_blank" rel="noopener">github.com/massine2001</a></div>
+    </footer>
+</div>
+

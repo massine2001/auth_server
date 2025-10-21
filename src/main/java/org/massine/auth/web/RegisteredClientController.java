@@ -76,6 +76,13 @@ public class RegisteredClientController {
         RegisteredClient existing = repository.findById(id);
         if (existing == null) throw new IllegalArgumentException("Client not found");
         RegisteredClient updated = buildClient(form, existing.getId(), existing);
+        int rows = jdbcTemplate.update(
+                "UPDATE oauth2_registered_client SET client_id = ?, client_name = ? WHERE id = ?",
+                form.getClientId().trim(),
+                form.getClientName().trim(),
+                id
+        );
+
         repository.save(updated);
         return "redirect:/clients";
     }

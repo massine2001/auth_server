@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -61,6 +62,8 @@
     </style>
 </head>
 <body>
+<div th:replace="fragments/header :: mainHeader"></div>
+
 <form th:action="@{/login}" method="post">
     <h1>Connexion</h1>
 
@@ -86,5 +89,6 @@
         <a th:href="@{/forgot-password}">Mot de passe oublié ?</a>
     </div>
 </form>
+<div th:replace="fragments/footer :: mainFooter"></div>
 </body>
 </html>

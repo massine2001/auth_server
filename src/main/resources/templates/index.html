@@ -7,7 +7,7 @@
     <style>
         body { font-family: system-ui, sans-serif; background:#f8f9fa; color:#212529;
             display:flex; flex-direction:column; align-items:center; justify-content:center;
-            height:100vh; margin:0; }
+            height:90vh; margin:0; }
         h1 { font-weight:500; }
         p { max-width:500px; text-align:center; line-height:1.4; }
         a { color:#007bff; text-decoration:none; margin:0 0.5rem; }
@@ -18,9 +18,18 @@
         button:hover { background:#f0f0f0; }
         .msg { margin-top:1rem; color:green; }
     </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          integrity="sha512-Xx..." crossorigin="anonymous" referrerpolicy="no-referrer">
+
 </head>
 <body>
-<h1>auth.massine.org</h1>
+<div th:replace="fragments/header :: mainHeader"></div>
+
+<h1> <a th:href="@{/}" class="brand" style="display:flex;align-items:center;gap:.5rem;color:#2563eb;">
+    <i class="fa-solid fa-user-shield" style="font-size:24px;"></i>
+    <span>Massine Auth</span>
+</a></h1>
 
 <p>
     Serveur d’autorisation (OAuth2 / OpenID Connect) personnel développé par
@@ -38,15 +47,11 @@
 <div class="links" sec:authorize="isAuthenticated()">
     <div class="row">
         <span>Connecté en tant que&nbsp;<strong sec:authentication="name">user</strong></span>
-        <form th:action="@{/logout}" method="post" style="display:inline;">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit">Se déconnecter</button>
-        </form>
     </div>
 </div>
 
 <p class="msg" th:if="${param.logout}">Déconnecté avec succès.</p>
 
-<p style="margin-top:2rem;"><a href="https://massine.org">massine.org</a></p>
+<div th:replace="fragments/footer :: mainFooter"></div>
 </body>
 </html>

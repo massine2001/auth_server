@@ -12,31 +12,33 @@
     </style>
 </head>
 <body>
-    <h1>Clients OAuth2</h1>
-    <a href="/clients/new">Nouveau Client</a>
-    <table>
-        <thead>
-            <tr>
-                <th>ID Client</th>
-                <th>Nom Client</th>
-                <th>Type</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="client : ${clients}">
-                <td th:text="${client.clientId}"></td>
-                <td th:text="${client.clientName}"></td>
-                <td th:text="${client.authorizationGrantTypes.contains(T(org.springframework.security.oauth2.core.AuthorizationGrantType).AUTHORIZATION_CODE) ? 'SPA' : 'M2M'}"></td>
-                <td>
-                    <a th:href="@{/clients/{id}/edit(id=${client.id})}">Modifier</a>
-                    <form th:action="@{/clients/{id}/delete(id=${client.id})}" method="post" onsubmit="return confirm('Supprimer ce client ?')">
-                        <button type="submit">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<div th:replace="fragments/header :: mainHeader"></div>
+
+<h1>Clients OAuth2</h1>
+<a href="/clients/new">Nouveau Client</a>
+<table>
+    <thead>
+    <tr>
+        <th>ID Client</th>
+        <th>Nom Client</th>
+        <th>Type</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="client : ${clients}">
+        <td th:text="${client.clientId}"></td>
+        <td th:text="${client.clientName}"></td>
+        <td th:text="${client.authorizationGrantTypes.contains(T(org.springframework.security.oauth2.core.AuthorizationGrantType).AUTHORIZATION_CODE) ? 'SPA' : 'M2M'}"></td>
+        <td>
+            <a th:href="@{/clients/{id}/edit(id=${client.id})}">Modifier</a>
+            <form th:action="@{/clients/{id}/delete(id=${client.id})}" method="post" onsubmit="return confirm('Supprimer ce client ?')">
+                <button type="submit">Supprimer</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
 </body>
 </html>
-

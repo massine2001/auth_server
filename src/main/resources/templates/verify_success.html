@@ -17,10 +17,13 @@
     </style>
 </head>
 <body>
+<div th:replace="fragments/header :: mainHeader"></div>
+
 <div>
     <h2>Vérification réussie</h2>
     <p>Votre adresse e-mail a été confirmée.</p>
     <p><a th:href="@{/login}">Se connecter</a></p>
 </div>
+<div th:replace="fragments/footer :: mainFooter"></div>
 </body>
 </html>

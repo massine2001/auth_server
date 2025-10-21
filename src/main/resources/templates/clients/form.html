@@ -11,47 +11,50 @@
     </style>
 </head>
 <body>
-    <h1 th:text="${isNew ? 'Nouveau Client' : 'Modifier Client'}">Client</h1>
-    <form th:object="${form}" th:action="${isNew ? '/clients' : '/clients/' + id}" method="post">
-        <label for="clientId">Client ID:</label>
-        <input type="text" th:field="*{clientId}" id="clientId" required />
+<div th:replace="fragments/header :: mainHeader"></div>
 
-        <label for="clientSecret">Client Secret:</label>
-        <input type="password" th:field="*{clientSecret}" id="clientSecret" />
+<h1 th:text="${isNew ? 'Nouveau Client' : 'Modifier Client'}">Client</h1>
+<form th:object="${form}" th:action="${isNew ? '/clients' : '/clients/' + id}" method="post">
+    <label for="clientId">Client ID:</label>
+    <input type="text" th:field="*{clientId}" id="clientId" required />
 
-        <label for="clientName">Nom Client:</label>
-        <input type="text" th:field="*{clientName}" id="clientName" required />
+    <label for="clientSecret">Client Secret:</label>
+    <input type="password" th:field="*{clientSecret}" id="clientSecret" />
 
-        <label for="type">Type:</label>
-        <select th:field="*{type}" id="type" required>
-            <option value="SPA">SPA</option>
-            <option value="M2M">M2M</option>
-        </select>
+    <label for="clientName">Nom Client:</label>
+    <input type="text" th:field="*{clientName}" id="clientName" required />
 
-        <label for="redirectUris">Redirect URIs (pour SPA):</label>
-        <textarea th:field="*{redirectUris}" id="redirectUris" rows="3"></textarea>
+    <label for="type">Type:</label>
+    <select th:field="*{type}" id="type" required>
+        <option value="SPA">SPA</option>
+        <option value="M2M">M2M</option>
+    </select>
 
-        <label for="scopes">Scopes (séparés par des espaces):</label>
-        <textarea th:field="*{scopes}" id="scopes" rows="3" required></textarea>
+    <label for="redirectUris">Redirect URIs (pour SPA):</label>
+    <textarea th:field="*{redirectUris}" id="redirectUris" rows="3"></textarea>
 
-        <button type="submit" th:text="${isNew ? 'Créer' : 'Mettre à jour'}">Submit</button>
-    </form>
+    <label for="scopes">Scopes (séparés par des espaces):</label>
+    <textarea th:field="*{scopes}" id="scopes" rows="3" required></textarea>
 
-    <script>
-        function toggleFields() {
-            const type = document.getElementById('type').value;
-            const clientSecret = document.getElementById('clientSecret');
-            const redirectUris = document.getElementById('redirectUris');
-            if (type === 'SPA') {
-                clientSecret.style.display = 'none';
-                redirectUris.style.display = 'block';
-            } else if (type === 'M2M') {
-                clientSecret.style.display = 'block';
-                redirectUris.style.display = 'none';
-            }
+    <button type="submit" th:text="${isNew ? 'Créer' : 'Mettre à jour'}">Submit</button>
+</form>
+
+<script>
+    function toggleFields() {
+        const type = document.getElementById('type').value;
+        const clientSecret = document.getElementById('clientSecret');
+        const redirectUris = document.getElementById('redirectUris');
+        if (type === 'SPA') {
+            clientSecret.style.display = 'none';
+            redirectUris.style.display = 'block';
+        } else if (type === 'M2M') {
+            clientSecret.style.display = 'block';
+            redirectUris.style.display = 'none';
         }
-        document.getElementById('type').addEventListener('change', toggleFields);
-        toggleFields(); // Initial call
-    </script>
+    }
+    document.getElementById('type').addEventListener('change', toggleFields);
+    toggleFields(); // Initial call
+</script>
+
 </body>
 </html>

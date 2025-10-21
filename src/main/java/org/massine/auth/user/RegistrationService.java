@@ -16,13 +16,15 @@ public class RegistrationService {
     private final EmailVerificationTokenRepo emailTokens;
     private final PasswordEncoder pe;
     private final Mailer mailer;
+    private final UserRoleRespository userRole;
 
-    public RegistrationService(UserRepository users, RoleRepository roles, EmailVerificationTokenRepo emailTokens, PasswordEncoder pe, Mailer mailer) {
+    public RegistrationService(UserRepository users, RoleRepository roles, EmailVerificationTokenRepo emailTokens, PasswordEncoder pe, Mailer mailer, UserRoleRespository userRole) {
         this.users = users;
         this.roles = roles;
         this.emailTokens = emailTokens;
         this.pe = pe;
         this.mailer = mailer;
+        this.userRole = userRole;
     }
 
     @Transactional
@@ -36,6 +38,11 @@ public class RegistrationService {
         u.setPasswordHash(pe.encode(rawPassword));
         u.setEnabled(false);
         users.save(u);
+
+        UserRole ur = new UserRole();
+        ur.userId = u.getId();
+        ur.roleId = 2L;
+        userRole.save(ur);
 
         String tok = Tokens.randomUrlToken(32);
         EmailVerificationToken evt = new EmailVerificationToken();

@@ -5,15 +5,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+
+import java.util.Objects;
 
 @Configuration
 @EnableWebSecurity
@@ -48,6 +52,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/", "/register", "/verify", "/forgot-password", "/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/register", "/forgot-password", "/reset-password").permitAll()
+                        .requestMatchers("/clients/**").access((authentication, context) -> {
+                            var auth = authentication.get();
+                            if (auth == null || !auth.isAuthenticated()) {
+                                return new AuthorizationDecision(false);
+                            }
+                            return new AuthorizationDecision(
+                                    auth.getAuthorities().stream()
+                                            .map(GrantedAuthority::getAuthority)
+                                            .filter(Objects::nonNull)
+                                            .map(String::toUpperCase)
+                                            .anyMatch(s -> s.contains("ADMIN"))
+                            );
+                        })
                         .anyRequest().authenticated())
                 .formLogin(f -> f.loginPage("/login")
                         .defaultSuccessUrl("/", true)
