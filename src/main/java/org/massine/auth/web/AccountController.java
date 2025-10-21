@@ -12,10 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @Validated
-@RequiredArgsConstructor
 public class AccountController {
     private final RegistrationService reg;
     private final PasswordResetService reset;
+
+    public AccountController(RegistrationService reg, PasswordResetService reset) {
+        this.reg = reg;
+        this.reset = reset;
+    }
 
     @GetMapping("/register")
     public String registerForm() { return "register"; }

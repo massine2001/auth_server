@@ -10,13 +10,20 @@ import java.time.Instant;
 import java.time.Duration;
 
 @Service
-@RequiredArgsConstructor
 public class RegistrationService {
     private final UserRepository users;
     private final RoleRepository roles;
     private final EmailVerificationTokenRepo emailTokens;
     private final PasswordEncoder pe;
     private final Mailer mailer;
+
+    public RegistrationService(UserRepository users, RoleRepository roles, EmailVerificationTokenRepo emailTokens, PasswordEncoder pe, Mailer mailer) {
+        this.users = users;
+        this.roles = roles;
+        this.emailTokens = emailTokens;
+        this.pe = pe;
+        this.mailer = mailer;
+    }
 
     @Transactional
     public void startRegistration(String email, String rawPassword, String baseUrl) {

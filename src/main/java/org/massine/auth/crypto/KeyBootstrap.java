@@ -8,9 +8,12 @@ import org.springframework.stereotype.Component;
 
 @Profile("app")
 @Component
-@RequiredArgsConstructor
 class KeyBootstrap implements ApplicationRunner {
     private final JwkService jwkService;
+
+    KeyBootstrap(JwkService jwkService) {
+        this.jwkService = jwkService;
+    }
 
     @Override public void run(ApplicationArguments args) {
         try {

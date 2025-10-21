@@ -11,10 +11,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
 class JwkConfig {
 
     private final JwkService jwkService;
+
+    JwkConfig(JwkService jwkService) {
+        this.jwkService = jwkService;
+    }
 
     @Bean
     InitializingBean jwkInit() {

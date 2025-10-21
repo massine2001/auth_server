@@ -14,10 +14,14 @@ import java.sql.SQLException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Service
-@RequiredArgsConstructor
 public class JpaUserDetailsService implements UserDetailsService {
     private final JdbcTemplate jdbc;
     private final PasswordEncoder pe;
+
+    public JpaUserDetailsService(JdbcTemplate jdbc, PasswordEncoder pe) {
+        this.jdbc = jdbc;
+        this.pe = pe;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

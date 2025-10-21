@@ -18,10 +18,13 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class JwkService {
 
     private final JdbcTemplate jdbc;
+
+    public JwkService(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
 
 
     public RSAPrivateKey loadActivePrivateKey() {

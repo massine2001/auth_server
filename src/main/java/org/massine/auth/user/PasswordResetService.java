@@ -9,12 +9,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.*;
 
 @Service
-@RequiredArgsConstructor
 public class PasswordResetService {
     private final UserRepository users;
     private final PasswordResetTokenRepo resetTokens;
     private final PasswordEncoder pe;
     private final Mailer mailer;
+
+    public PasswordResetService(UserRepository users, PasswordResetTokenRepo resetTokens, PasswordEncoder pe, Mailer mailer) {
+        this.users = users;
+        this.resetTokens = resetTokens;
+        this.pe = pe;
+        this.mailer = mailer;
+    }
 
     @Transactional
     public void startReset(String email, String baseUrl) {

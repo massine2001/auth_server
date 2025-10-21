@@ -10,12 +10,15 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Component
-@RequiredArgsConstructor
 public class JwkRotationJob {
 
     private final JdbcTemplate jdbc;
 
     private static final Duration TOKEN_MAX_LIFETIME = Duration.ofDays(30);
+
+    public JwkRotationJob(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
 
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
