@@ -43,5 +43,4 @@ build/
 *.env
 *.yml
 *.yaml
-*.properties
 *.idea

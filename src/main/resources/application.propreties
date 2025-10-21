@@ -1,0 +1,21 @@
+spring.application.name=auth
+
+spring.jpa.open-in-view=false
+spring.jpa.properties.hibernate.jdbc.time_zone=UTC
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# Hikari
+spring.datasource.hikari.maximum-pool-size=5
+spring.datasource.hikari.minimum-idle=1
+spring.datasource.hikari.idle-timeout=60000
+spring.datasource.hikari.max-lifetime=1800000
+spring.datasource.hikari.connection-timeout=30000
+
+app.issuer=${APP_ISSUER}
+
+spring.jpa.properties.hibernate.default_schema=${DB_SCHEMA}
+
+spring.flyway.enabled=false
+spring.jpa.hibernate.ddl-auto=validate
+
+
