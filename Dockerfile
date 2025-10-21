@@ -9,5 +9,5 @@ FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar
-EXPOSE 8000
-ENTRYPOINT ["sh","-c","java -Dserver.port=${PORT:-8000} -jar app.jar"]
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","app.jar"]
