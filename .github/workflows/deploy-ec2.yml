@@ -1,0 +1,100 @@
+name: CI/CD EC2 Spring Boot
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Package JAR
+        run: mvn -B -ntp -DskipTests package
+
+      - name: Locate built JAR
+        id: jar
+        run: |
+          JAR_PATH=$(ls -1 target/*.jar | grep -v 'original-' | head -n1)
+          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: ${{ steps.jar.outputs.jar_path }}
+
+  deploy:
+    name: Deploy to EC2 (production)
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ secrets.EC2_HOST }}
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: ./dist
+
+      - name: Prepare SSH key
+        run: |
+          echo "${SSH_KEY}" > key.pem
+          chmod 600 key.pem
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+
+      - name: Add EC2 host to known_hosts
+        run: |
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copy JAR to EC2
+        run: |
+          scp -i key.pem ./dist/*.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/${{ secrets.JAR_NAME }}
+
+      - name: Stop, replace, start service
+        run: |
+          ssh -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "sudo systemctl stop ${SERVICE}; \
+             sudo mv /tmp/${JAR} ${APP}/${JAR}; \
+             sudo chown spring:spring ${APP}/${JAR}; \
+             sudo systemctl start ${SERVICE}; \
+             sleep 3; \
+             sudo systemctl is-active ${SERVICE}"
+        env:
+          SERVICE: ${{ secrets.SERVICE_NAME }}
+          APP: ${{ secrets.APP_DIR }}
+          JAR: ${{ secrets.JAR_NAME }}
+
+      - name: Health check (local on EC2)
+        run: |
+          ssh -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "curl -fsS http://127.0.0.1:${PORT}${PATH}"
+        env:
+          PORT: ${{ secrets.HEALTH_PORT }}
+          PATH: ${{ secrets.HEALTH_PATH }}
+
+      - name: Show journal tail on failure
+        if: failure()
+        run: |
+          ssh -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "sudo journalctl -u ${SERVICE} -n 200 --no-pager || true"
+        env:
+          SERVICE: ${{ secrets.SERVICE_NAME }}
