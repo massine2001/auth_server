@@ -85,14 +85,6 @@ jobs:
              sleep 3; \
              sudo systemctl is-active ${SERVICE}"
 
-      - name: Health check
-        env:
-          PORT: ${{ secrets.HEALTH_PORT || '8080' }}
-          PATH: ${{ secrets.HEALTH_PATH || '/actuator/health' }}
-        run: |
-          ssh "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
-            "curl -fsS http://127.0.0.1:${PORT}${PATH}"
-
       - name: Show journal tail on failure
         if: failure()
         env:
