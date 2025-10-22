@@ -32,7 +32,8 @@ jobs:
         id: jar
         run: |
           JAR_PATH=$(ls -1 target/*.jar | grep -v 'original-' | head -n1)
-          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+          if [ -z "$JAR_PATH" ]; then echo "No JAR found" >&2; exit 1; fi
+          echo "jar_path=$JAR_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -47,7 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://${{ secrets.EC2_HOST }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -57,22 +57,23 @@ jobs:
 
       - name: Prepare SSH key
         run: |
-          echo "${SSH_KEY}" > key.pem
-          chmod 600 key.pem
+          umask 077
+          printf '%s' "$SSH_KEY" > key.pem
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
 
       - name: Add EC2 host to known_hosts
         run: |
+          mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Copy JAR to EC2
         run: |
-          scp -i key.pem ./dist/*.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/${{ secrets.JAR_NAME }}
+          scp -i key.pem ./dist/*.jar "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/${{ secrets.JAR_NAME }}"
 
       - name: Stop, replace, start service
         run: |
-          ssh -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "sudo systemctl stop ${SERVICE}; \
              sudo mv /tmp/${JAR} ${APP}/${JAR}; \
              sudo chown spring:spring ${APP}/${JAR}; \
@@ -85,16 +86,17 @@ jobs:
           JAR: ${{ secrets.JAR_NAME }}
 
       - name: Health check (local on EC2)
-        run: |
-          ssh -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            "curl -fsS http://127.0.0.1:${PORT}${PATH}"
         env:
-          PORT: ${{ secrets.HEALTH_PORT }}
-          PATH: ${{ secrets.HEALTH_PATH }}
+          PORT: ${{ secrets.HEALTH_PORT || '8080' }}
+          PATH: ${{ secrets.HEALTH_PATH || '/actuator/health' }}
+        run: |
+          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+            "curl -fsS http://127.0.0.1:${PORT}${PATH}"
 
       - name: Show journal tail on failure
         if: failure()
-        run: |
-          ssh -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "sudo journalctl -u ${SERVICE} -n 200 --no-pager || true"
         env:
           SERVICE: ${{ secrets.SERVICE_NAME }}
+        run: |
+          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+            "sudo journalctl -u ${SERVICE} -n 200 --no-pager || true"
