@@ -55,44 +55,42 @@ jobs:
           name: app-jar
           path: ./dist
 
-      - name: Load SSH key from base64
-        run: |
-           install -d -m 700 "$HOME/.ssh"
-           echo "$SSH_KEY_B64" | base64 -d > ~/.ssh/id_ed25519
-           chmod 600 ~/.ssh/id_ed25519
-        env:
-           SSH_KEY_B64: ${{ secrets.SSH_KEY_B64 }}
+      - name: Start SSH agent with provided key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
 
 
       - name: Add EC2 host to known_hosts
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          mkdir -p "$HOME/.ssh"
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> "$HOME/.ssh/known_hosts"
 
       - name: Copy JAR to EC2
         run: |
-          scp -i key.pem ./dist/*.jar "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/${{ secrets.JAR_NAME }}"
+          scp ./dist/*.jar \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/${{ secrets.JAR_NAME }}"
 
       - name: Stop, replace, start service
+        env:
+          SERVICE: ${{ secrets.SERVICE_NAME }}
+          APP: ${{ secrets.APP_DIR }}
+          JAR: ${{ secrets.JAR_NAME }}
         run: |
-          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+          ssh "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "sudo systemctl stop ${SERVICE}; \
              sudo mv /tmp/${JAR} ${APP}/${JAR}; \
              sudo chown spring:spring ${APP}/${JAR}; \
              sudo systemctl start ${SERVICE}; \
              sleep 3; \
              sudo systemctl is-active ${SERVICE}"
-        env:
-          SERVICE: ${{ secrets.SERVICE_NAME }}
-          APP: ${{ secrets.APP_DIR }}
-          JAR: ${{ secrets.JAR_NAME }}
 
-      - name: Health check (local on EC2)
+      - name: Health check
         env:
           PORT: ${{ secrets.HEALTH_PORT || '8080' }}
           PATH: ${{ secrets.HEALTH_PATH || '/actuator/health' }}
         run: |
-          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+          ssh "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "curl -fsS http://127.0.0.1:${PORT}${PATH}"
 
       - name: Show journal tail on failure
@@ -100,5 +98,5 @@ jobs:
         env:
           SERVICE: ${{ secrets.SERVICE_NAME }}
         run: |
-          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+          ssh "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "sudo journalctl -u ${SERVICE} -n 200 --no-pager || true"
