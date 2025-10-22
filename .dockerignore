@@ -31,3 +31,12 @@ docker-compose*.yml
 # Logs
 *.log
 logs/
+
+
+target
+**/*.iml
+.gitlab-ci.yml
+.github
+Dockerfile*
+README.md
+
