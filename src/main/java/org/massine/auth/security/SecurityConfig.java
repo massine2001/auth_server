@@ -18,11 +18,6 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.util.Objects;
 
 @Configuration
@@ -30,32 +25,36 @@ import java.util.Objects;
 @EnableConfigurationProperties(CorsProps.class)
 public class SecurityConfig {
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource(CorsProps p) {
-        var c = new CorsConfiguration();
-        c.setAllowedOrigins(p.getAllowedOrigins());
-        c.setAllowedMethods(p.getAllowedMethods());
-        c.setAllowedHeaders(p.getAllowedHeaders());
-        c.setAllowCredentials(p.isAllowCredentials());
-        c.setMaxAge(p.getMaxAge());
-        var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", c);
-        return source;
-    }
 
     @Bean
     @Order(1)
-    SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, @Value("${APP_CORS_ALLOWED_ORIGINS}") String allowedOriginsEnv) throws Exception {
         var as = OAuth2AuthorizationServerConfigurer.authorizationServer();
 
         http
                 .securityMatcher(as.getEndpointsMatcher())
                 .with(as, authz -> authz.oidc(Customizer.withDefaults()))
-                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.ignoringRequestMatchers(as.getEndpointsMatcher()))
+                .cors(cors -> cors.configurationSource(request -> {
+                    var c = new org.springframework.web.cors.CorsConfiguration();
+
+                    var origins = java.util.Arrays.stream(allowedOriginsEnv.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .toList();
+                    if (!origins.isEmpty()) c.setAllowedOrigins(origins);
+
+                    c.setAllowedMethods(java.util.List.of("GET", "POST", "OPTIONS"));
+                    c.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
+                    c.setAllowCredentials(false);
+                    c.setMaxAge(java.time.Duration.ofHours(1));
+
+                    return c;
+                }))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(a -> a
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/.well-known/**", "/oauth2/jwks").permitAll()
                         .anyRequest().authenticated())
                 .headers(h -> h
