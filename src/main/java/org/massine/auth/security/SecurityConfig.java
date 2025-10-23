@@ -31,30 +31,6 @@ import java.util.Objects;
 public class SecurityConfig {
 
   @Bean
-  CorsConfigurationSource corsConfigurationSource(
-      @Value("${APP_CORS_ALLOWED_ORIGINS:}") String allowedOriginsEnv
-  ) {
-    var cfg = new CorsConfiguration();
-
-    List<String> origins = Arrays.stream(allowedOriginsEnv.split(","))
-        .map(String::trim)
-        .filter(s -> !s.isEmpty())
-        .toList();
-    if (!origins.isEmpty()) {
-      cfg.setAllowedOrigins(origins);
-    }
-
-    cfg.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
-    cfg.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-    cfg.setAllowCredentials(false);
-    cfg.setMaxAge(Duration.ofHours(1));
-
-    var source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", cfg);
-    return source;
-  }
-
-  @Bean
   @Order(1)
   SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
     var as = OAuth2AuthorizationServerConfigurer.authorizationServer();
@@ -63,7 +39,6 @@ public class SecurityConfig {
       .securityMatcher(as.getEndpointsMatcher())
       .with(as, authz -> authz.oidc(Customizer.withDefaults()))
       .csrf(csrf -> csrf.ignoringRequestMatchers(as.getEndpointsMatcher()))
-      .cors(Customizer.withDefaults()) // ← utilise le bean corsConfigurationSource
       .exceptionHandling(e -> e.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
       .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
       .authorizeHttpRequests(a -> a
@@ -101,8 +76,7 @@ public class SecurityConfig {
         .loginPage("/login")
         .successHandler(new SavedRequestAwareAuthenticationSuccessHandler())
         .permitAll())
-      .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/?logout=1").permitAll())
-      .cors(Customizer.withDefaults());
+      .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/?logout=1").permitAll());
 
     return http.build();
   }
