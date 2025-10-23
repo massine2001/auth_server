@@ -67,7 +67,6 @@ public class SecurityConfig {
                         })
                         .anyRequest().authenticated())
                 .formLogin(f -> f.loginPage("/login")
-                        .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
                 .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/?logout=1").permitAll());
@@ -87,4 +86,5 @@ public class SecurityConfig {
     AuthorizationServerSettings authzSettings(@Value("${APP_ISSUER}") String issuer) {
         return AuthorizationServerSettings.builder().issuer(issuer).build();
     }
+
 }
