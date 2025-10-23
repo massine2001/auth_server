@@ -22,7 +22,6 @@ import java.util.Objects;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties(CorsProps.class)
 public class SecurityConfig {
 
 
