@@ -18,12 +18,30 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.Objects;
 
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(CorsProps.class)
 public class SecurityConfig {
 
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(CorsProps p) {
+        var c = new CorsConfiguration();
+        c.setAllowedOrigins(p.getAllowedOrigins());
+        c.setAllowedMethods(p.getAllowedMethods());
+        c.setAllowedHeaders(p.getAllowedHeaders());
+        c.setAllowCredentials(p.isAllowCredentials());
+        c.setMaxAge(p.getMaxAge());
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", c);
+        return source;
+    }
 
     @Bean
     @Order(1)
@@ -33,6 +51,7 @@ public class SecurityConfig {
         http
                 .securityMatcher(as.getEndpointsMatcher())
                 .with(as, authz -> authz.oidc(Customizer.withDefaults()))
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.ignoringRequestMatchers(as.getEndpointsMatcher()))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
