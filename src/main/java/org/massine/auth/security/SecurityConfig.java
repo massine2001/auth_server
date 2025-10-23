@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 import java.util.Objects;
 
@@ -66,7 +67,9 @@ public class SecurityConfig {
                             );
                         })
                         .anyRequest().authenticated())
-                .formLogin(f -> f.loginPage("/login")
+                .formLogin(f -> f
+                           .loginPage("/login")  
+                           .successHandler(new SavedRequestAwareAuthenticationSuccessHandler())
                         .permitAll()
                 )
                 .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/?logout=1").permitAll());
@@ -88,3 +91,4 @@ public class SecurityConfig {
     }
 
 }
+
