@@ -1,40 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8" />
     <title th:text="${isNew ? 'Nouveau Client' : 'Modifier Client'}">Client</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        form { max-width: 600px; }
-        label { display: block; margin-top: 10px; }
-        input, textarea, select { width: 100%; padding: 8px; margin-top: 5px; }
+        form { max-width: 700px; }
+        label { display: block; margin-top: 10px; font-weight: 600; }
+        input, textarea, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
         button { margin-top: 20px; padding: 10px 20px; }
+        .hint { font-size: 12px; color: #666; margin-top: 4px; }
+        .row { margin-bottom: 14px; }
+        code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
     </style>
 </head>
 <body>
 <div th:replace="fragments/header :: mainHeader"></div>
 
 <h1 th:text="${isNew ? 'Nouveau Client' : 'Modifier Client'}">Client</h1>
+
 <form th:object="${form}" th:action="${isNew ? '/clients' : '/clients/' + id}" method="post">
-    <label for="clientId">Client ID:</label>
-    <input type="text" th:field="*{clientId}" id="clientId" required />
 
-    <label for="clientSecret">Client Secret:</label>
-    <input type="password" th:field="*{clientSecret}" id="clientSecret" />
+    <div class="row">
+        <label for="clientId">Client ID</label>
+        <input type="text" th:field="*{clientId}" id="clientId" required />
+    </div>
 
-    <label for="clientName">Nom Client:</label>
-    <input type="text" th:field="*{clientName}" id="clientName" required />
+    <div class="row" id="clientSecretRow">
+        <label for="clientSecret">Client Secret</label>
+        <input type="password" th:field="*{clientSecret}" id="clientSecret" />
+        <div class="hint">
+            Requis pour <strong>BFF</strong> et <strong>M2M</strong> (confidential). Ignoré pour <strong>SPA</strong>.
+        </div>
+    </div>
 
-    <label for="type">Type:</label>
-    <select th:field="*{type}" id="type" required>
-        <option value="SPA">SPA</option>
-        <option value="M2M">M2M</option>
-    </select>
+    <div class="row">
+        <label for="clientName">Nom Client</label>
+        <input type="text" th:field="*{clientName}" id="clientName" required />
+    </div>
 
-    <label for="redirectUris">Redirect URIs (pour SPA):</label>
-    <textarea th:field="*{redirectUris}" id="redirectUris" rows="3"></textarea>
+    <div class="row">
+        <label for="type">Type</label>
+        <select th:field="*{type}" id="type" required>
+            <option value="SPA">SPA (public, PKCE)</option>
+            <option value="BFF">BFF / Confidential (auth code + secret)</option>
+            <option value="M2M">M2M (client credentials)</option>
+        </select>
+    </div>
 
-    <label for="scopes">Scopes (séparés par des espaces):</label>
-    <textarea th:field="*{scopes}" id="scopes" rows="3" required></textarea>
+    <div class="row" id="redirectUrisRow">
+        <label for="redirectUris">Redirect URIs (séparées par des virgules)</label>
+        <textarea th:field="*{redirectUris}" id="redirectUris" rows="3"></textarea>
+        <div class="hint">
+            Requis pour <strong>SPA</strong> et <strong>BFF</strong>. Exemple :
+            <code>http://localhost:5173/callback</code> (SPA),
+            <code>http://localhost:8090/login/oauth2/code/spa</code> (BFF).
+        </div>
+    </div>
+
+    <div class="row" id="postLogoutUrisRow">
+        <label for="postLogoutRedirectUris">Post-logout Redirect URIs (séparées par des virgules)</label>
+        <textarea th:field="*{postLogoutRedirectUris}" id="postLogoutRedirectUris" rows="3"></textarea>
+        <div class="hint">
+            Optionnel mais recommandé pour <strong>SPA</strong> et <strong>BFF</strong>. Exemple :
+            <code>http://localhost:5173/</code> (SPA), <code>http://localhost:3000/</code> (autre SPA).
+        </div>
+    </div>
+
+    <div class="row">
+        <label for="scopes">Scopes (séparés par des espaces)</label>
+        <textarea th:field="*{scopes}" id="scopes" rows="3" required></textarea>
+        <div class="hint">
+            Exemple : <code>openid profile email offline_access api.read</code><br>
+            <em>Note :</em> <code>openid</code> et <code>offline_access</code> seront rajoutés automatiquement côté serveur si absents (SPA/BFF).
+        </div>
+    </div>
 
     <button type="submit" th:text="${isNew ? 'Créer' : 'Mettre à jour'}">Submit</button>
 </form>
@@ -42,18 +82,26 @@
 <script>
     function toggleFields() {
         const type = document.getElementById('type').value;
-        const clientSecret = document.getElementById('clientSecret');
-        const redirectUris = document.getElementById('redirectUris');
+        const clientSecretRow = document.getElementById('clientSecretRow');
+        const redirectUrisRow = document.getElementById('redirectUrisRow');
+        const postLogoutUrisRow = document.getElementById('postLogoutUrisRow');
+
         if (type === 'SPA') {
-            clientSecret.style.display = 'none';
-            redirectUris.style.display = 'block';
+            clientSecretRow.style.display = 'none';
+            redirectUrisRow.style.display = 'block';
+            postLogoutUrisRow.style.display = 'block';
+        } else if (type === 'BFF') {
+            clientSecretRow.style.display = 'block';
+            redirectUrisRow.style.display = 'block';
+            postLogoutUrisRow.style.display = 'block';
         } else if (type === 'M2M') {
-            clientSecret.style.display = 'block';
-            redirectUris.style.display = 'none';
+            clientSecretRow.style.display = 'block';
+            redirectUrisRow.style.display = 'none';
+            postLogoutUrisRow.style.display = 'none';
         }
     }
     document.getElementById('type').addEventListener('change', toggleFields);
-    toggleFields(); // Initial call
+    toggleFields();
 </script>
 
 </body>

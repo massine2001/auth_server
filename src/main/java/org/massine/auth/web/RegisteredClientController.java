@@ -117,28 +117,72 @@ public class RegisteredClientController {
             if (StringUtils.hasText(form.getRedirectUris())) {
                 b.redirectUris(uris -> uris.addAll(splitComma(form.getRedirectUris())));
             }
-            if (StringUtils.hasText(form.getScopes())) {
-                b.scopes(scopes -> {
-                    if (StringUtils.hasText(form.getScopes())) {
-                        scopes.addAll(splitSpaceLower(form.getScopes()));
-                    }
-                    scopes.add("openid");
-                    scopes.add("offline_access");
-                });
+            if (StringUtils.hasText(form.getPostLogoutRedirectUris())) {
+                b.postLogoutRedirectUris(uris -> uris.addAll(splitComma(form.getPostLogoutRedirectUris())));
             }
+
+            b.scopes(scopes -> {
+                if (StringUtils.hasText(form.getScopes())) {
+                    scopes.addAll(splitSpaceLower(form.getScopes()));
+                }
+                scopes.add("openid");
+                scopes.add("offline_access");
+            });
+
+        } else if ("BFF".equalsIgnoreCase(form.getType())) {
+            b.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                    .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                    .clientSettings(ClientSettings.builder()
+                            .requireProofKey(true)
+                            .requireAuthorizationConsent(true)
+                            .build())
+                    .tokenSettings(TokenSettings.builder()
+                            .reuseRefreshTokens(false)
+                            .refreshTokenTimeToLive(Duration.ofHours(8))
+                            .build());
+
+            if (StringUtils.hasText(form.getClientSecret())) {
+                b.clientSecret(passwordEncoder.encode(form.getClientSecret().trim()));
+            } else if (existingOrNull != null && StringUtils.hasText(existingOrNull.getClientSecret())) {
+                b.clientSecret(existingOrNull.getClientSecret());
+            } else {
+                throw new IllegalArgumentException("Client secret requis pour BFF");
+            }
+
+            if (StringUtils.hasText(form.getRedirectUris())) {
+                b.redirectUris(uris -> uris.addAll(splitComma(form.getRedirectUris())));
+            } else {
+                throw new IllegalArgumentException("Redirect URIs requis pour BFF");
+            }
+            if (StringUtils.hasText(form.getPostLogoutRedirectUris())) {
+                b.postLogoutRedirectUris(uris -> uris.addAll(splitComma(form.getPostLogoutRedirectUris())));
+            }
+
+            b.scopes(scopes -> {
+                if (StringUtils.hasText(form.getScopes())) {
+                    scopes.addAll(splitSpaceLower(form.getScopes()));
+                }
+                scopes.add("openid");
+                scopes.add("offline_access");
+            });
+
         } else if ("M2M".equalsIgnoreCase(form.getType())) {
             b.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                     .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS);
 
             if (StringUtils.hasText(form.getClientSecret())) {
-                b.clientSecret(passwordEncoder.encode(form.getClientSecret()));
+                b.clientSecret(passwordEncoder.encode(form.getClientSecret().trim()));
             } else if (existingOrNull != null && StringUtils.hasText(existingOrNull.getClientSecret())) {
                 b.clientSecret(existingOrNull.getClientSecret());
+            } else {
+                throw new IllegalArgumentException("Client secret requis pour M2M");
             }
 
             if (StringUtils.hasText(form.getScopes())) {
                 b.scopes(scopes -> scopes.addAll(splitSpaceLower(form.getScopes())));
             }
+
         } else {
             throw new IllegalArgumentException("Unknown client type: " + form.getType());
         }
@@ -166,11 +210,22 @@ public class RegisteredClientController {
         f.setClientName(client.getClientName());
         f.setRedirectUris(String.join(", ", client.getRedirectUris()));
         f.setScopes(String.join(" ", client.getScopes()));
+
+        var postLogout = client.getPostLogoutRedirectUris();
+        if (postLogout != null && !postLogout.isEmpty()) {
+            f.setPostLogoutRedirectUris(String.join(", ", postLogout));
+        }
+
         if (client.getAuthorizationGrantTypes().contains(AuthorizationGrantType.AUTHORIZATION_CODE)) {
-            f.setType("SPA");
+            if (client.getClientAuthenticationMethods().contains(ClientAuthenticationMethod.NONE)) {
+                f.setType("SPA");
+            } else {
+                f.setType("BFF");
+            }
         } else if (client.getAuthorizationGrantTypes().contains(AuthorizationGrantType.CLIENT_CREDENTIALS)) {
             f.setType("M2M");
         }
         return f;
     }
+
 }

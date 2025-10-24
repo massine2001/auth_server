@@ -22,6 +22,9 @@ public class RegisteredClientForm {
     @Size(max = 2048)
     private String redirectUris;
 
+    @Size(max = 2048)
+    private String postLogoutRedirectUris;
+
     @Size(max = 1024)
     private String scopes;
 
@@ -40,6 +43,9 @@ public class RegisteredClientForm {
 
     public String getRedirectUris() { return redirectUris; }
     public void setRedirectUris(String redirectUris) { this.redirectUris = redirectUris; }
+
+    public String getPostLogoutRedirectUris() { return postLogoutRedirectUris; }
+    public void setPostLogoutRedirectUris(String postLogoutRedirectUris) { this.postLogoutRedirectUris = postLogoutRedirectUris; }
 
     public String getScopes() { return scopes; }
     public void setScopes(String scopes) { this.scopes = scopes; }
