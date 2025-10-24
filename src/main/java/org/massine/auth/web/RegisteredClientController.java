@@ -105,13 +105,23 @@ public class RegisteredClientController {
                     .clientSettings(ClientSettings.builder()
                             .requireProofKey(true)
                             .requireAuthorizationConsent(true)
+                            .build())
+                    .tokenSettings(TokenSettings.builder()
+                            .reuseRefreshTokens(false)
+                            .refreshTokenTimeToLive(Duration.ofHours(1))
                             .build());
 
             if (StringUtils.hasText(form.getRedirectUris())) {
                 b.redirectUris(uris -> uris.addAll(splitComma(form.getRedirectUris())));
             }
             if (StringUtils.hasText(form.getScopes())) {
-                b.scopes(scopes -> scopes.addAll(splitSpace(form.getScopes())));
+                b.scopes(scopes -> {
+                    if (StringUtils.hasText(form.getScopes())) {
+                        scopes.addAll(splitSpaceLower(form.getScopes()));
+                    }
+                    scopes.add("openid");
+                    scopes.add("offline_access");
+                });
             }
         } else if ("M2M".equalsIgnoreCase(form.getType())) {
             b.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
@@ -124,7 +134,7 @@ public class RegisteredClientController {
             }
 
             if (StringUtils.hasText(form.getScopes())) {
-                b.scopes(scopes -> scopes.addAll(splitSpace(form.getScopes())));
+                b.scopes(scopes -> scopes.addAll(splitSpaceLower(form.getScopes())));
             }
         } else {
             throw new IllegalArgumentException("Unknown client type: " + form.getType());
@@ -139,9 +149,11 @@ public class RegisteredClientController {
                 .collect(Collectors.toList());
     }
 
-    private static List<String> splitSpace(String s) {
+    private static List<String> splitSpaceLower(String s) {
         return List.of(s.split("\\s+")).stream()
                 .filter(StringUtils::hasText)
+                .map(String::toLowerCase)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
