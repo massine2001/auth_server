@@ -22,8 +22,12 @@
 <div>
     <h2>Vérification réussie</h2>
     <p>Votre adresse e-mail a été confirmée.</p>
-    <p><a th:href="@{/login}">Se connecter</a></p>
-</div>
+    <p th:if="${login != null}">
+        <a th:href="${login}">Se connecter</a>
+    </p>
+    <p th:if="${login == null}">
+        <a th:href="@{/login}">Se connecter</a>
+    </p></div>
 <div th:replace="fragments/footer :: mainFooter"></div>
 </body>
 </html>

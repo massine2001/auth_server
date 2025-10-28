@@ -27,10 +27,11 @@ public class AccountController {
     @PostMapping("/register")
     public String register(@RequestParam @Email String email,
                            @RequestParam @Size(min=8, max=200) String password,
+                           @RequestParam(value = "loginUrl", required = false) String loginUrl,
                            HttpServletRequest req,
                            Model model) {
         try {
-            reg.startRegistration(email, password, baseUrl(req));
+            reg.startRegistration(email, password, baseUrl(req), loginUrl);
             model.addAttribute("message","Vérifiez votre e-mail pour confirmer votre compte.");
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
@@ -39,9 +40,13 @@ public class AccountController {
     }
 
     @GetMapping("/verify")
-    public String verify(@RequestParam String token, Model model) {
+    public String verify(
+                        @RequestParam String token,
+                         @RequestParam(value = "login", required = false) String login,
+                        Model model) {
         try {
             reg.verify(token);
+            model.addAttribute("login", login);
             return "verify_success";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
