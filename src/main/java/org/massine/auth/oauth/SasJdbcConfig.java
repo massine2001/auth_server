@@ -37,14 +37,25 @@ public class SasJdbcConfig {
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> oidcClaims(UserRepository users) {
         return ctx -> {
-            if (ctx.getTokenType().getValue().equals("id_token")) {
-                String username = ctx.getPrincipal().getName();
-                users.findByUsername(username).ifPresent(u -> {
-                    ctx.getClaims().claim("email", u.getEmail());
-                    ctx.getClaims().claim("email_verified", u.isEnabled());
-                });
+        String username = ctx.getPrincipal().getName();
+        users.findByUsername(username).ifPresent(u -> {
+            
+            String tokenType = ctx.getTokenType().getValue();
+
+            if ("access_token".equals(tokenType)) {
+                ctx.getClaims().claim("email", u.getEmail());
+                ctx.getClaims().claim("preferred_username", username);
+                ctx.getClaims().claim("email_verified", u.isEnabled());
             }
-        };
+            
+            if ("id_token".equals(tokenType)) {
+                ctx.getClaims().claim("email", u.getEmail());
+                ctx.getClaims().claim("preferred_username", username);
+                ctx.getClaims().claim("email_verified", u.isEnabled());
+            }
+            
+        });
+    };
     }
 
 }
