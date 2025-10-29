@@ -2,34 +2,117 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Massine Auth Server</title>
-    <style>
-        body { font-family: system-ui, sans-serif; background:#f8f9fa; color:#212529;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            height:90vh; margin:0; }
-        h1 { font-weight:500; }
-        p { max-width:500px; text-align:center; line-height:1.4; }
-        a { color:#007bff; text-decoration:none; margin:0 0.5rem; }
-        a:hover { text-decoration:underline; }
-        .links { margin-top:1.5rem; font-size:0.95rem; }
-        .row { display:flex; gap:.5rem; align-items:center; justify-content:center; }
-        button { padding:.4rem .8rem; border:1px solid #ccc; background:white; border-radius:6px; cursor:pointer; }
-        button:hover { background:#f0f0f0; }
-        .msg { margin-top:1rem; color:green; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
           integrity="sha512-Xx..." crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style>
+        :root{
+            --bg:#f6f7f9;
+            --card:#fff;
+            --text:#0f172a;
+            --muted:#6b7280;
+            --primary:#0d6efd;
+            --primary-600:#0b5ed7;
+            --ring:#93c5fd;
+            --error:#dc2626;
+            --success:#16a34a;
+            --radius:12px;
+            --shadow:0 6px 18px rgba(16,24,40,.08);
+            --shadow-soft:0 1px 2px rgba(16,24,40,.06);
+        }
 
+        *{box-sizing:border-box;margin:0;padding:0}
+        html,body{height:100%}
+        body{
+            font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            padding:24px;
+            text-align:center;
+        }
+
+        h1{
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            gap:.6rem;
+            color:var(--primary);
+            font-size:1.8rem;
+            margin-bottom:.8rem;
+        }
+
+        p{
+            max-width:520px;
+            line-height:1.55;
+            margin-bottom:1rem;
+            color:var(--muted);
+            font-size:1rem;
+        }
+
+        a{
+            color:var(--primary);
+            text-decoration:none;
+            font-weight:500;
+        }
+        a:hover{text-decoration:underline}
+
+        .links{
+            margin-top:1.4rem;
+            font-size:.97rem;
+            color:var(--muted);
+            display:flex;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:.6rem;
+        }
+
+        .row{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:.5rem;
+        }
+
+        button{
+            padding:.5rem 1rem;
+            border:1px solid #d1d5db;
+            background:var(--card);
+            border-radius:10px;
+            cursor:pointer;
+            transition:background .15s ease, transform .02s ease-in;
+        }
+        button:hover{background:#f0f2f5}
+        button:active{transform:translateY(1px)}
+
+        .msg{
+            color:var(--success);
+            background:#dcfce7;
+            border:1px solid #bbf7d0;
+            padding:10px 12px;
+            border-radius:10px;
+            font-size:.92rem;
+            text-align:center;
+            margin-top:1.4rem;
+            width:fit-content;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="fragments/header :: mainHeader"></div>
 
-<h1> <a th:href="@{/}" class="brand" style="display:flex;align-items:center;gap:.5rem;color:#2563eb;">
-    <i class="fa-solid fa-user-shield" style="font-size:24px;"></i>
-    <span>Massine Auth</span>
-</a></h1>
+<h1>
+    <a th:href="@{/}" class="brand">
+        <i class="fa-solid fa-user-shield" style="font-size:24px;"></i>
+        <span>Massine Auth</span>
+    </a>
+</h1>
 
 <p>
     Serveur d’autorisation (OAuth2 / OpenID Connect) personnel développé par
@@ -39,7 +122,8 @@
 
 <!-- Non authentifié -->
 <div class="links" sec:authorize="!isAuthenticated()">
-    <a th:href="@{/login}">Se connecter</a> |
+    <a th:href="@{/login}">Se connecter</a>
+    <span>•</span>
     <a th:href="@{/register}">Créer un compte</a>
 </div>
 
