@@ -21,6 +21,7 @@
     <input type="email" name="email" placeholder="Adresse e-mail" required />
     <input type="password" name="password" placeholder="Mot de passe" required minlength="8" />
     <button type="submit">S'inscrire</button>
+    <input type="hidden" name="loginUrl" th:value="${loginUrl}">
     <p th:text="${message}" style="color:green"></p>
     <p th:text="${error}" style="color:red"></p>
     <p><a th:href="@{/login}">Déjà inscrit ?</a></p>

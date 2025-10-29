@@ -85,7 +85,7 @@
     <button type="submit">Se connecter</button>
 
     <div class="links">
-        <a th:href="@{/register}">Créer un compte</a><br>
+        <a th:href="@{/register(loginUrl=${loginUrl})}">Créer un compte</a>
         <a th:href="@{/forgot-password}">Mot de passe oublié ?</a>
     </div>
 </form>

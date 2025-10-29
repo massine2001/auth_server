@@ -10,19 +10,27 @@ import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+
 @Controller
 @Validated
 public class AccountController {
     private final RegistrationService reg;
     private final PasswordResetService reset;
+    private final EmailVerificationTokenRepo emailTokens;
 
-    public AccountController(RegistrationService reg, PasswordResetService reset) {
+
+    public AccountController(RegistrationService reg, PasswordResetService reset, EmailVerificationTokenRepo emailTokens) {
         this.reg = reg;
         this.reset = reset;
+        this.emailTokens = emailTokens;
     }
 
     @GetMapping("/register")
-    public String registerForm() { return "register"; }
+    public String registerForm(@RequestParam(required = false) String loginUrl, Model model) {
+        model.addAttribute("loginUrl", loginUrl);
+        return "register";
+    }
 
     @PostMapping("/register")
     public String register(@RequestParam @Email String email,
@@ -36,20 +44,30 @@ public class AccountController {
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
         }
+        model.addAttribute("loginUrl", loginUrl);
+
         return "register";
     }
 
     @GetMapping("/verify")
     public String verify(
                         @RequestParam String token,
-                         @RequestParam(value = "login", required = false) String login,
                         Model model) {
         try {
+            var evt = emailTokens.findByTokenAndUsedFalseAndExpiresAtAfter(token, Instant.now())
+                    .orElseThrow(() -> new IllegalArgumentException("Lien invalide ou expiré"));
+
             reg.verify(token);
-            model.addAttribute("login", login);
+
+            String loginUrl = (evt.loginUrl != null && !evt.loginUrl.isBlank())
+                    ? evt.loginUrl
+                    : "/login";
+
+            model.addAttribute("loginUrl", loginUrl);
             return "verify_success";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
+            model.addAttribute("loginUrl", "/login");
             return "verify_success";
         }
     }

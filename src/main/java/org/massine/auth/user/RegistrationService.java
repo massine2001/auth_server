@@ -31,7 +31,7 @@ public class RegistrationService {
     }
 
     @Transactional
-    public void startRegistration(String email, String rawPassword, String baseUrl, String loginUrl) {
+    public void startRegistration(String email, String rawPassword, String baseUrl, String loginUrlDefault) {
         String username = email.toLowerCase();
         users.findByEmail(email).ifPresent(u -> { throw new IllegalArgumentException("Email déjà utilisé"); });
 
@@ -52,13 +52,11 @@ public class RegistrationService {
         evt.userId = u.getId();
         evt.token = tok;
         evt.expiresAt = Instant.now().plus(Duration.ofHours(24));
+        evt.loginUrl = loginUrlDefault;
         emailTokens.save(evt);
 
         String link = baseUrl + "/verify?token=" + tok;
-        if (loginUrl != null && !loginUrl.isBlank()) {
-            String enc = URLEncoder.encode(loginUrl, StandardCharsets.UTF_8);
-            link = link + "&login=" + enc;
-        }
+
         String html = """
 <!DOCTYPE html>
 <html lang="fr">
