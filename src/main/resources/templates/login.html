@@ -155,7 +155,7 @@
 
 <div class="notif">
     <strong>💡 Accès instantané :</strong> Cliquez directement sur <strong>"Se connecter"</strong> <br>
-    Email : <strong>test</strong> — Mot de passe : <strong>test</strong><br>
+    Email : <strong>test@test.com</strong> — Mot de passe : <strong>test@password</strong><br>
 </div>
 
 <form th:action="@{/login}" method="post">
@@ -174,11 +174,11 @@
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
     <div class="field">
-        <input type="text" name="username" placeholder="Adresse e-mail" value="test" required/>
+        <input type="text" name="username" placeholder="Adresse e-mail" value="test@test.com" required/>
     </div>
 
     <div class="field">
-        <input type="password" name="password" placeholder="Mot de passe" value="test" required/>
+        <input type="password" name="password" placeholder="Mot de passe" value="test@password" required/>
     </div>
 
     <button type="submit" id="loginBtn">Se connecter</button>
